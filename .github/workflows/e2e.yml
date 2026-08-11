@@ -1,6 +1,10 @@
 name: Playwright E2E
-on: push: branches: [ main ] 
-pull_request: branches: [ main ] 
+
+on: 
+  push: 
+    branches: [ main ] 
+  pull_request: 
+    branches: [ main ] 
 
 jobs: 
   test: 
@@ -12,7 +16,8 @@ jobs:
 
        - name: Setup Node 
          uses: actions/setup-node@v4 
-         with: node-version: 20 
+         with: 
+           node-version: 20 
          
        - name: Install dependencies 
          run: npm ci 
@@ -22,7 +27,8 @@ jobs:
 
        - name: Run tests 
          run: npx playwright test 
-         env: OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+         env: 
+           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
        - name: Upload HTML report 
          uses: actions/upload-artifact@v4 
