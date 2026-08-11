@@ -1,0 +1,22 @@
+# Dependencies 
+node_modules/ 
+
+# Playwright reports 
+playwright-report/ 
+test-results/ 
+reports/ 
+
+# Allure 
+allure-results/ 
+allure-report/ 
+
+# Artifacts 
+videos/ 
+screenshots/ 
+traces/ 
+
+# OS files 
+.DS_Store 
+
+# Logs 
+*.log
