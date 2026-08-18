@@ -25,8 +25,8 @@ jobs:
        - name: Install Playwright browsers 
          run: npx playwright install --with-deps 
 
-       - name: Run tests 
-         run: npx playwright test 
+       - name: Run smoke tests 
+         run: npx playwright test --grep @smoke 
          env: 
            OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 

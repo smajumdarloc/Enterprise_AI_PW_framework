@@ -4,22 +4,32 @@ export default defineConfig({
   testDir: './tests',
   timeout: 30000,
   retries: 1,
-  reporter: [ 
+
+  reporter: [
     ['html', { outputFolder: 'reports/html' }],
-    ['allure-playwright'] 
+    ['allure-playwright']
   ],
 
   use: {
-    baseURL: 'https://sauce-demo.myshopify.com',
+    baseURL: 'https://www.saucedemo.com',
     headless: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
   },
+
   projects: [
-    {
-      name: 'chromium',
-      use: { browserName: 'chromium' },
+  { name: "setup", 
+    testMatch: /.*\.setup\.ts/ 
+  },
+  {
+    name: "chromium",
+    use: {
+      browserName: "chromium",
+      storageState: "playwright/.auth/user.json",
     },
-  ],
+    dependencies: ["setup"],
+  },
+]
+,
 });
