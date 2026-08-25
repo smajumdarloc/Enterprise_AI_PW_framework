@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-
+//import {processFailure} from '../utils/testHooks';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
@@ -63,7 +63,8 @@ export const test = base.extend<AppFixtures>({
   // API Test Data Client
   testDataApi: async ({ request }, use) => {
     await use(new TestDataApi(request));
-  }
+  },
+  
 });
 
 // Re-export expect

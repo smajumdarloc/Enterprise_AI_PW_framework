@@ -5,6 +5,6 @@ test('@regression intentional failure for AI',
 
   await page.goto('/inventory.html');
 
-  await expect(page.locator('h1'))
-    .toHaveText('This will fail');
+  await expect(page.locator('.wrong-title'))
+  .toHaveText('Products');
 });

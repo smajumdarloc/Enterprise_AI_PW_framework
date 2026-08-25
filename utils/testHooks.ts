@@ -1,9 +1,14 @@
-import { TestInfo } from '@playwright/test';
+import { Page, TestInfo } from '@playwright/test';
+import { inspectPage } from '../ai/pageInspector';
 import { analyzeFailure } from '../ai/failureAnalyzer';
 import { writeAiReport } from '../ai/reportWriter';
 import { suggestLocators } from '../ai/locatorHealer';
 
-export async function processFailure(testInfo: TestInfo) {
+
+export async function processFailure(
+  page: Page,
+  testInfo: TestInfo
+) {
 
   // Run only for unexpected failures
   if (testInfo.status !== testInfo.expectedStatus) {
@@ -14,9 +19,19 @@ export async function processFailure(testInfo: TestInfo) {
       console.log('🔴 RAW ERROR START'); 
       console.log(errorText); 
       console.log('🔴 RAW ERROR END');
+      
+    const pageInfo = await inspectPage(page);
+
+        console.log('🌐 PAGE INFORMATION');
+        console.log('Headings:', pageInfo.headings);
+        console.log('Buttons:', pageInfo.buttons);
+        console.log('Links:', pageInfo.links);
 
     // ---------------- Locator Healer ----------------
-    const locatorSuggestions = suggestLocators(errorText);
+    const locatorSuggestions = suggestLocators(
+    errorText,
+    pageInfo
+    );
 
     console.log('🩹 Locator suggestions:');
     locatorSuggestions.forEach(s => console.log('  -', s));
