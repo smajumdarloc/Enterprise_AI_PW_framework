@@ -1,37 +1,66 @@
 import { openai } from '../openaiClient';
 import {
-  TestCase,
-  TestCaseSchema
+    TestCase,
+    TestCaseSchema
 } from './testCaseSchema';
 import { z } from 'zod';
+import {
+    readRules,
+    readSkills
+} from '../knowledge/knowledgeReader';
+
 
 const TestCaseArraySchema = z.array(
-  TestCaseSchema
+    TestCaseSchema
 );
 
 export async function generateTestCases(
-  requirement: string
+    requirement: string
 ): Promise<TestCase[]> {
 
-  const response =
-    await openai.chat.completions.create({
+    const rules =
+        readRules();
 
-      model: 'gpt-4o-mini',
+    const skills =
+        readSkills();
 
-      messages: [
+    const response =
+        await openai.chat.completions.create({
 
-        // ------------------------------------------
-        // SYSTEM PROMPT
-        // ------------------------------------------
+            model: 'gpt-4o-mini',
 
-        {
-          role: 'system',
+            messages: [
 
-          content: `
+                // ------------------------------------------
+                // SYSTEM PROMPT
+                // ------------------------------------------
+
+                {
+                    role: 'system',
+
+                    content: `
 You are an expert QA test engineer.
 
-Your job is to analyze a software requirement
-and generate comprehensive test cases.
+You are generating test cases for an
+existing Playwright TypeScript framework.
+
+Follow the framework rules and skills below.
+
+========================================
+FRAMEWORK RULES
+========================================
+
+${rules}
+
+========================================
+FRAMEWORK SKILLS
+========================================
+
+${skills}
+
+========================================
+TEST GENERATION RULES
+========================================
 
 Generate:
 
@@ -39,27 +68,28 @@ Generate:
 2. Negative test cases
 3. Boundary test cases when applicable
 
-Rules:
+Do not invent application behavior.
 
-- Return ONLY valid JSON.
-- Return a JSON ARRAY of test cases.
-- Do not return Markdown.
-- Do not return explanations.
-- Do not add comments.
-- Do not invent application behavior that is
-  unrelated to the requirement.
+Do not invent framework capabilities.
 
-Each test case MUST contain these fields:
+Return ONLY valid JSON.
+
+Return a JSON object with this structure:
 
 {
-  "id": "string",
-  "title": "string",
-  "type": "positive | negative | boundary",
-  "priority": "low | medium | high | critical",
-  "preconditions": ["string"],
-  "steps": ["string"],
-  "expectedResult": "string"
+  "testCases": [
+    {
+      "id": "TC001",
+      "title": "...",
+      "type": "positive",
+      "priority": "high",
+      "preconditions": [],
+      "steps": [],
+      "expectedResult": "..."
+    }
+  ]
 }
+
 
 IMPORTANT RULES:
 
@@ -123,92 +153,99 @@ Example:
   }
 ]
 `
-        },
+                },
 
-        // ------------------------------------------
-        // USER PROMPT
-        // ------------------------------------------
+                // ------------------------------------------
+                // USER PROMPT
+                // ------------------------------------------
 
-        {
-          role: 'user',
+                {
+                    role: 'user',
 
-          content: `
-Generate test cases for this requirement:
+                    content: `
+            Generate test cases for this requirement.
 
-${requirement}
+            Requirement:
 
-Return the test cases as JSON.
+            ${requirement}
+
+            Remember:
+
+            - Follow the framework rules.
+            - Only generate scenarios relevant to the requirement.
+            - Do not assume unsupported framework capabilities.
+            - Return the required JSON structure.
 `
-        }
-      ]
-    });
+                }
+            ]
+        });
 
-  // ----------------------------------------------
-  // Get AI response
-  // ----------------------------------------------
+    // ----------------------------------------------
+    // Get AI response
+    // ----------------------------------------------
 
-  const content =
-    response.choices[0]?.message?.content;
+    const content =
+        response.choices[0]?.message?.content;
 
-  if (!content) {
+    if (!content) {
 
-    throw new Error(
-      'AI returned an empty response'
+        throw new Error(
+            'AI returned an empty response'
+        );
+    }
+
+    console.log('🤖 Raw AI test case response:');
+    console.log(content);
+
+    // ----------------------------------------------
+    // Parse JSON
+    // ----------------------------------------------
+
+    let rawData: unknown;
+
+    try {
+
+        rawData = JSON.parse(content);
+
+    } catch {
+
+        throw new Error(
+            `AI returned invalid JSON:\n${content}`
+        );
+    }
+
+    // ----------------------------------------------
+    // Validate using Zod
+    // ----------------------------------------------
+
+    const result =
+        TestCaseArraySchema.safeParse(rawData);
+
+    if (!result.success) {
+
+        console.error(
+            '❌ Zod validation failed:'
+        );
+
+        console.error(
+            result.error.format()
+        );
+
+        throw new Error(
+            `AI generated invalid test cases:\n${result.error.message}`
+        );
+    }
+
+    if (result.data.length === 0) {
+
+        throw new Error(
+            'AI generated zero test cases for the requirement'
+        );
+    }
+
+    console.log(
+        `✅ ${result.data.length} AI test cases validated`
     );
-  }
 
-  console.log('🤖 Raw AI test case response:');
-  console.log(content);
-
-  // ----------------------------------------------
-  // Parse JSON
-  // ----------------------------------------------
-
-  let rawData: unknown;
-
-  try {
-
-    rawData = JSON.parse(content);
-
-  } catch {
-
-    throw new Error(
-      `AI returned invalid JSON:\n${content}`
-    );
-  }
-
-  // ----------------------------------------------
-  // Validate using Zod
-  // ----------------------------------------------
-
-  const result =
-    TestCaseArraySchema.safeParse(rawData);
-
-  if (!result.success) {
-
-    console.error(
-      '❌ Zod validation failed:'
-    );
-
-    console.error(
-      result.error.format()
-    );
-
-    throw new Error(
-      `AI generated invalid test cases:\n${result.error.message}`
-    );
-  }
-
-  if (result.data.length === 0) {
-
-  throw new Error(
-    'AI generated zero test cases for the requirement'
-  );
-}
-
-  console.log(
-    `✅ ${result.data.length} AI test cases validated`
-  );
-
-  return result.data;
+    return result.data;
 }

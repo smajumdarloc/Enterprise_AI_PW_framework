@@ -17,6 +17,14 @@ export class CartPage {
     await expect(this.cartList).toBeVisible();
   }
 
+  async openCart() {
+
+    await this.page
+      .locator('.shopping_cart_link')
+      .click();
+
+  }
+
   async proceedToCheckout() {
     await this.checkoutButton.click();
   }

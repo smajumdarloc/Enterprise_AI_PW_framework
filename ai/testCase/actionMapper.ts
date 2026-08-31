@@ -1,6 +1,7 @@
 export enum TestAction {
   NAVIGATE_TO_PRODUCT = 'NAVIGATE_TO_PRODUCT',
-  ADD_TO_CART = 'ADD_TO_CART'
+  ADD_TO_CART = 'ADD_TO_CART',
+  NAVIGATE_TO_CART = 'NAVIGATE_TO_CART'
 }
 
 
@@ -44,6 +45,14 @@ export function mapAction(
 
     return TestAction.ADD_TO_CART;
   }
+
+  if (
+  normalizedStep.includes('navigate to the shopping cart') ||
+  normalizedStep.includes('go to the shopping cart') ||
+  normalizedStep.includes('open the shopping cart')
+) {
+  return TestAction.NAVIGATE_TO_CART;
+}
 
 
   // ------------------------------------------

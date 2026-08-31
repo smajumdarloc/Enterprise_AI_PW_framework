@@ -9,6 +9,131 @@ const TestCaseArraySchema = z.array(
   TestCaseSchema
 );
 
+export interface TestUser {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  postalCode: string;
+}
+
+export async function generateTestUser(
+  scenario: 'valid' | 'invalid-email'
+): Promise<TestUser> {
+
+  const response =
+    await openai.chat.completions.create({
+
+      model: 'gpt-4o-mini',
+
+      messages: [
+
+        {
+          role: 'system',
+
+          content: `
+You are an expert QA test data generator.
+
+Generate test user data for the requested scenario.
+
+Rules:
+
+- Return ONLY valid JSON.
+- Do not return Markdown.
+- Do not return explanations.
+
+The JSON MUST contain:
+
+{
+  "firstName": "string",
+  "lastName": "string",
+  "email": "string",
+  "password": "string",
+  "postalCode": "string"
+}
+
+For "valid":
+- Generate a valid email address.
+
+For "invalid-email":
+- Generate an invalid email address.
+- The email must NOT contain a valid @domain structure.
+`
+        },
+
+        {
+          role: 'user',
+
+          content: `
+Generate test data for this scenario:
+
+${scenario}
+
+Return ONLY JSON.
+`
+        }
+
+      ]
+    });
+
+  const content =
+    response.choices[0]?.message?.content;
+
+  if (!content) {
+
+    throw new Error(
+      'AI returned an empty test user response'
+    );
+  }
+
+  console.log(
+    '🤖 Raw AI user response:'
+  );
+
+  console.log(content);
+
+  let rawData: unknown;
+
+  try {
+
+    rawData =
+      JSON.parse(content);
+
+  } catch {
+
+    throw new Error(
+      `AI returned invalid JSON:\n${content}`
+    );
+  }
+
+  const TestUserSchema =
+    z.object({
+
+      firstName: z.string(),
+
+      lastName: z.string(),
+
+      email: z.string(),
+
+      password: z.string(),
+
+      postalCode: z.string()
+
+    });
+
+  const result =
+    TestUserSchema.safeParse(rawData);
+
+  if (!result.success) {
+
+    throw new Error(
+      `AI generated invalid test user:\n${result.error.message}`
+    );
+  }
+
+  return result.data;
+}
+
 export async function generateTestCases(
   requirement: string
 ): Promise<TestCase[]> {
