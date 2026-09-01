@@ -6,7 +6,10 @@
   "scripts": {
   "ai:generate": "tsx scripts/generateAiTest.ts",
   "ai:test": "npm run ai:generate && npx playwright test tests/ui/ai-generated",
-  "mcp:qa": "tsx mcp/qaMcpServer.ts"
+  "mcp:qa": "tsx mcp/qaMcpServer.ts",
+  "test": "npx playwright test",
+  "allure:generate": "rm -rf reports/allure && npx allure generate allure-results -o reports/allure",
+  "allure:open": "npx allure open reports/allure"
 },
   "keywords": [],
   "author": "",
