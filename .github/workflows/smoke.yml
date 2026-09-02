@@ -23,7 +23,8 @@ jobs:
       - name: Run Smoke Tests
         run: docker compose run --rm tests npx playwright test --grep "@smoke"
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+            OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+            BASE_URL: ${{ vars.BASE_URL }}
 
       - name: Upload Playwright Report
         if: always()

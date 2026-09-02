@@ -24,6 +24,7 @@ jobs:
         run: docker compose run --rm tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BASE_URL: ${{ vars.BASE_URL }}
 
       - name: Generate Allure report
         if: always()
