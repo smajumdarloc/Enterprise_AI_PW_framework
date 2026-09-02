@@ -32,6 +32,7 @@ jobs:
         with:
           name: regression-allure-report
           path: reports/allure
+          retention-days: 7
           if-no-files-found: warn
 
       - name: Upload Allure Results
@@ -40,4 +41,5 @@ jobs:
         with:
           name: regression-allure-results
           path: allure-results
+          retention-days: 7
           if-no-files-found: warn

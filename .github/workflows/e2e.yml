@@ -38,6 +38,7 @@ jobs:
         with:
           name: playwright-report
           path: reports/html
+          retention-days: 7
           if-no-files-found: warn
 
       - name: Upload Allure results
@@ -46,6 +47,7 @@ jobs:
         with:
           name: allure-results
           path: allure-results
+          retention-days: 7
           if-no-files-found: warn
 
       - name: Upload Allure report
@@ -54,4 +56,5 @@ jobs:
         with:
           name: allure-report
           path: reports/allure
+          retention-days: 7
           if-no-files-found: warn
