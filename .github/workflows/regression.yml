@@ -1,0 +1,42 @@
+name: Playwright Regression Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker compose build
+
+      - name: Run Regression Tests
+        run: docker compose run --rm tests npx playwright test --grep "@regression"
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          rm -rf reports/allure
+          npx --yes allure@3.16.0 generate allure-results --output reports/allure
+
+      - name: Upload Allure Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-allure-report
+          path: reports/allure
+          if-no-files-found: warn
+
+      - name: Upload Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-allure-results
+          path: allure-results
+          if-no-files-found: warn
