@@ -7,43 +7,23 @@ on:
   pull_request:
     branches: [ main ]
 
+  workflow_dispatch:
+
 jobs:
-
   test:
-
     runs-on: ubuntu-latest
 
     steps:
-
-      # ----------------------------------------
-      # Checkout
-      # ----------------------------------------
-
       - name: Checkout
         uses: actions/checkout@v4
 
-
-      # ----------------------------------------
-      # Build Docker image
-      # ----------------------------------------
-
       - name: Build Docker image
         run: docker compose build
-
-
-      # ----------------------------------------
-      # Run Playwright tests inside Docker
-      # ----------------------------------------
 
       - name: Run Playwright tests
         run: docker compose run --rm tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-
-      # ----------------------------------------
-      # Generate Allure report
-      # ----------------------------------------
 
       - name: Generate Allure report
         if: always()
@@ -51,23 +31,13 @@ jobs:
           rm -rf reports/allure
           npx --yes allure@3.16.0 generate allure-results --output reports/allure
 
-
-      # ----------------------------------------
-      # Upload Playwright HTML report
-      # ----------------------------------------
-
-      - name: Upload HTML report
+      - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: reports/html
           if-no-files-found: warn
-
-
-      # ----------------------------------------
-      # Upload Allure results
-      # ----------------------------------------
 
       - name: Upload Allure results
         if: always()
@@ -76,11 +46,6 @@ jobs:
           name: allure-results
           path: allure-results
           if-no-files-found: warn
-
-
-      # ----------------------------------------
-      # Upload Allure HTML report
-      # ----------------------------------------
 
       - name: Upload Allure report
         if: always()
