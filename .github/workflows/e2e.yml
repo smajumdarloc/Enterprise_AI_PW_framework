@@ -32,7 +32,7 @@ jobs:
 
 
       # ----------------------------------------
-      # Run Playwright tests in Docker
+      # Run Playwright tests inside Docker
       # ----------------------------------------
 
       - name: Run Playwright tests
@@ -42,13 +42,50 @@ jobs:
 
 
       # ----------------------------------------
+      # Generate Allure report
+      # ----------------------------------------
+
+      - name: Generate Allure report
+        if: always()
+        run: |
+          rm -rf reports/allure
+          npx --yes allure@3.16.0 generate allure-results --output reports/allure
+
+
+      # ----------------------------------------
       # Upload Playwright HTML report
       # ----------------------------------------
 
       - name: Upload HTML report
         if: always()
         uses: actions/upload-artifact@v4
-
         with:
           name: playwright-report
           path: reports/html
+          if-no-files-found: warn
+
+
+      # ----------------------------------------
+      # Upload Allure results
+      # ----------------------------------------
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          if-no-files-found: warn
+
+
+      # ----------------------------------------
+      # Upload Allure HTML report
+      # ----------------------------------------
+
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: reports/allure
+          if-no-files-found: warn
